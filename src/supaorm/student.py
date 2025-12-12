@@ -11,16 +11,19 @@ from typing import List
 from sqlalchemy import String
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from supaorm.base import Entity
-from supaorm.course import Course
+from .entity import Entity
+from .entity import student_course
 
 
 class Student(Entity):
     __tablename__ = "student"
-    id = mapped_column(primary_key=True)
-    first_name = mapped_column(String(80))
-    last_name = mapped_column(String(80))
-    # Student <-> Course Many-to-Many relationship would be defined here
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(80))
+    last_name: Mapped[str] = mapped_column(String(80))
+    # Student <-> Course Many-to-Many relationship
     courses: Mapped[List["Course"]] = relationship(
-        back_populates = "student", cascade = "all, delete-orphan")
-
+        "Course",
+        secondary=student_course,
+        back_populates="students",
+        cascade="all, delete",
+    )
