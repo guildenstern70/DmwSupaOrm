@@ -22,26 +22,22 @@ from supaorm.student import Student
 load_dotenv()
 DB_URL = os.getenv('DB_URL')
 
-if __name__ == '__main__':
-    print("DmwSupaOrm v.0.0.1")
-    version = sqlalchemy.__version__
-    print("-- SQLAlchemy version:", version)
-
-    engine = sqlalchemy.create_engine(DB_URL, client_encoding='utf8', poolclass=NullPool)
-    print("-- Connecting to database...")
-    with engine.connect() as conn:
-        result = conn.execute(text("select 1"))  # execute a simple query
-        print(result.all())
-    print("-- Connection closed.")
-
+def create_database_entities(sql_engine):
     print("-- Creating database entities...")
     # Create all tables (including association table student_course)
-    Entity.metadata.create_all(engine)
+    Entity.metadata.create_all(sql_engine)
     print("-- Done.")
 
+def delete_database_entities(sql_engine):
+    print("-- Deleting database entities...")
+    # Drop all tables (including association table student_course)
+    Entity.metadata.drop_all(sql_engine)
+    print("-- Done.")
+
+def popultate_entities(sql_engine):
     print("-- Populating entities...")
     # Use an ORM Session for object persistence (Connection has no add_all)
-    with Session(engine) as session:
+    with Session(sql_engine) as session:
         with session.begin():
             # Add sample professors
             prof1 = Professor(first_name="John", last_name="Doe", email="johndoe@gmail.com")
@@ -72,3 +68,27 @@ if __name__ == '__main__':
             student5 = Student(first_name="Laura", last_name="Anderson", courses=student5_courses)
             session.add_all([student1, student2, student3, student4, student5])
     print("-- Done.")
+
+if __name__ == '__main__':
+    print("DmwSupaOrm v.0.0.1")
+    version = sqlalchemy.__version__
+    print("-- SQLAlchemy version:", version)
+
+    engine = sqlalchemy.create_engine(DB_URL, client_encoding='utf8', poolclass=NullPool)
+    print("-- Connecting to database...")
+    with engine.connect() as conn:
+        result = conn.execute(text("select * from student"))  # execute a simple query
+        students = result.all()
+    print("-- Connection closed.")
+
+    if len(students) > 0:
+        print(f"-- Database already populated with {len(students)} students.")
+    else:
+        delete_database_entities(engine)
+        create_database_entities(engine)
+        print("-- Database is empty. Populating...")
+        popultate_entities(engine)
+        print("-- All done.")
+
+
+
