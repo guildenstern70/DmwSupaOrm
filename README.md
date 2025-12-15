@@ -14,3 +14,11 @@ To set up DMW SUPA ORM, follow these steps:
    pip install -r requirements.txt
    ```
    
+
+## Delete all tables
+
+    DELETE FROM student_course CASCADE;
+    DELETE FROM course CASCADE;
+    DELETE FROM student CASCADE;
+    DELETE FROM professor CASCADE;
+   
